@@ -9,33 +9,39 @@
     <style>
       :root {
         --cyan-glow: rgba(34, 211, 238, 0.4);
+        --slate-950: #0f172a;
       }
       body {
         background-color: #020617;
-        color: #cbd5e1;
+        color: #e2e8f0;
         overflow-x: hidden;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
       }
       ::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
       }
       ::-webkit-scrollbar-track {
         background: #020617;
       }
       ::-webkit-scrollbar-thumb {
-        background: #1e293b;
+        background: #334155;
         border-radius: 10px;
+        border: 2px solid #020617;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #334155;
+        background: #475569;
       }
       .glass-card {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
       }
       .glow-shadow {
-        box-shadow: 0 0 20px var(--cyan-glow);
+        box-shadow: 0 0 25px var(--cyan-glow);
+      }
+      section {
+        position: relative;
+        z-index: 10;
       }
     </style>
     <script type="importmap">
