@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { GitCommit, Cpu, Sparkles, Terminal, Code, Rocket } from 'lucide-react';
+import { Sparkles, Terminal, Code, Rocket } from 'lucide-react';
 
 const EVENTS = [
   {

@@ -1,6 +1,6 @@
-import React from "react";
+
 import { Timeline } from "./ui/timeline";
-import { Terminal, Code, Sparkles, Rocket, Cpu } from "lucide-react";
+import { Terminal, Sparkles, Rocket, Cpu } from "lucide-react";
 import { CodeExplanation } from "./CodeExplanation";
 import { ThreadingExplanation } from "./ThreadingExplanation";
 
