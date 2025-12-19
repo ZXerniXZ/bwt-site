@@ -1,6 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Cpu, Database, Server, FileJson, ArrowDown, Layers, HardDrive, User, Settings, Save } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Cpu, Database, Server, FileJson, ArrowDown, Layers, HardDrive, User, Settings, Save, Gift, Snowflake } from 'lucide-react';
+
+interface ThreadingExplanationProps {
+  isChristmas?: boolean;
+}
 
 // --- DATA: SERVER CODE (THREADING & JSON) ---
 const THREAD_SERVER_LINES = [
@@ -76,7 +80,7 @@ const IO_STEPS = [
 
 // --- VISUALIZERS ---
 
-const ThreadsVisualizer = () => {
+const ThreadsVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     const [threads, setThreads] = useState<{id: number, active: boolean, status: string}[]>([]);
     const [incomingPulse, setIncomingPulse] = useState(false);
     
@@ -101,36 +105,37 @@ const ThreadsVisualizer = () => {
     }, []);
 
     return (
-        <div className="mt-4 border border-white/5 rounded-2xl p-6 bg-slate-950/60 relative overflow-hidden h-[260px] flex flex-col shadow-2xl">
+        <div className={`mt-4 border rounded-2xl p-6 relative overflow-hidden h-[260px] flex flex-col shadow-2xl transition-colors ${isChristmas ? 'bg-red-950/60 border-red-500/20' : 'bg-slate-950/60 border-white/5'}`}>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(34,211,238,0.02)_1px,_transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
 
             {/* Top Bar: Client & Server Listener */}
             <div className="flex items-center justify-between mb-8 relative z-10 px-2">
                 <div className="flex flex-col items-center gap-1">
-                    <div className={`p-3 rounded-full transition-all duration-300 ${incomingPulse ? 'bg-cyan-500/20 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'bg-slate-900/50'}`}>
-                        <User className={`w-5 h-5 ${incomingPulse ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    <div className={`p-3 rounded-full transition-all duration-300 ${incomingPulse ? (isChristmas ? 'bg-green-500/20 scale-110 shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-cyan-500/20 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.4)]') : 'bg-slate-900/50'}`}>
+                        {isChristmas ? <Gift className={`w-5 h-5 ${incomingPulse ? 'text-green-400' : 'text-slate-600'}`} /> : <User className={`w-5 h-5 ${incomingPulse ? 'text-cyan-400' : 'text-slate-600'}`} />}
                     </div>
-                    <span className="text-[10px] text-slate-500 font-mono font-bold uppercase tracking-widest">Client</span>
+                    <span className="text-[10px] text-slate-500 font-mono font-bold uppercase tracking-widest">{isChristmas ? 'Regalo' : 'Client'}</span>
                 </div>
 
                 <div className="flex-1 px-4 flex justify-center">
                     <div className="w-full max-w-[100px] h-px bg-slate-800 relative overflow-hidden">
-                        {incomingPulse && <div className="absolute inset-0 bg-cyan-400 animate-[move_0.5s_linear_infinite]" />}
+                        {incomingPulse && <div className={`absolute inset-0 animate-[move_0.5s_linear_infinite] ${isChristmas ? 'bg-green-400' : 'bg-cyan-400'}`} />}
                         <style>{`@keyframes move { from { transform: translateX(-100%); } to { transform: translateX(100%); } }`}</style>
                     </div>
                 </div>
 
                 <div className="flex flex-col items-center gap-1">
-                    <div className={`p-3 rounded-xl border-2 transition-all duration-300 ${incomingPulse ? 'border-cyan-400 bg-cyan-950/30' : 'border-slate-800 bg-slate-900/80'}`}>
-                        <Server className={`w-5 h-5 ${incomingPulse ? 'text-cyan-400' : 'text-slate-400'}`} />
+                    <div className={`p-3 rounded-xl border-2 transition-all duration-300 ${incomingPulse ? (isChristmas ? 'border-red-400 bg-red-950/30' : 'border-cyan-400 bg-cyan-950/30') : 'border-slate-800 bg-slate-900/80'}`}>
+                        <Server className={`w-5 h-5 ${incomingPulse ? (isChristmas ? 'text-red-400' : 'text-cyan-400') : 'text-slate-400'}`} />
                     </div>
-                    <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Server (accept)</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isChristmas ? 'text-red-400' : 'text-cyan-400'}`}>Server (accept)</span>
                 </div>
             </div>
 
             {/* Bottom Section: Dedicated Worker Slots */}
             <div className="flex-1 grid grid-cols-3 gap-3 relative z-10">
                 {[0, 1, 2].map((slotIndex) => {
+                    // Fix: Use 'threads' (plural) to refer to the state array instead of 'thread' (singular)
                     const thread = threads[slotIndex];
                     const isOccupied = thread && thread.active;
                     
@@ -139,18 +144,18 @@ const ThreadsVisualizer = () => {
                             key={slotIndex}
                             className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-500 h-full
                                 ${isOccupied 
-                                    ? (thread.status === 'working' ? 'bg-indigo-950/30 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'bg-slate-900 border-slate-700 opacity-60') 
+                                    ? (thread.status === 'working' ? (isChristmas ? 'bg-green-950/30 border-green-500/50 shadow-green-500/10' : 'bg-indigo-950/30 border-indigo-500/50 shadow-indigo-500/10') : 'bg-slate-900 border-slate-700 opacity-60') 
                                     : 'bg-slate-950/50 border-white/5 opacity-20'}
                             `}
                         >
-                            <Cpu className={`w-6 h-6 mb-2 ${isOccupied && thread.status === 'working' ? 'text-indigo-400 animate-pulse' : 'text-slate-600'}`} />
+                            <Cpu className={`w-6 h-6 mb-2 ${isOccupied && thread.status === 'working' ? (isChristmas ? 'text-green-400 animate-pulse' : 'text-indigo-400 animate-pulse') : 'text-slate-600'}`} />
                             <div className="flex flex-col items-center text-center">
-                                <span className={`text-[10px] font-bold ${isOccupied ? 'text-indigo-300' : 'text-slate-700'}`}>
+                                <span className={`text-[10px] font-bold ${isOccupied ? (isChristmas ? 'text-green-300' : 'text-indigo-300') : 'text-slate-700'}`}>
                                     {isOccupied ? `Thread-${slotIndex + 1}` : 'IDLE'}
                                 </span>
                                 {isOccupied && (
                                     <span className="text-[8px] text-slate-500 font-mono mt-1 leading-tight">
-                                        {thread.status === 'working' ? 'Executing BWT' : 'Spawning...'}
+                                        {thread.status === 'working' ? (isChristmas ? 'Sorting Sled' : 'Executing BWT') : 'Spawning...'}
                                     </span>
                                 )}
                             </div>
@@ -160,13 +165,13 @@ const ThreadsVisualizer = () => {
             </div>
 
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] text-slate-700 font-mono uppercase tracking-[0.3em]">
-                Parallel Execution Layer
+                {isChristmas ? 'CHRISTMAS PARALLEL LAYER' : 'Parallel Execution Layer'}
             </div>
         </div>
     );
 };
 
-const JsonVisualizer = () => {
+const JsonVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     const [isSaving, setIsSaving] = useState(false);
     
     useEffect(() => {
@@ -178,29 +183,28 @@ const JsonVisualizer = () => {
     }, []);
 
     return (
-        <div className="mt-4 border border-white/5 rounded-2xl p-6 bg-slate-950/40 relative overflow-hidden h-[260px] flex flex-col shadow-inner select-none">
-            {/* Background Data Flow */}
+        <div className={`mt-4 border rounded-2xl p-6 relative overflow-hidden h-[260px] flex flex-col shadow-inner select-none transition-colors duration-1000 ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-slate-950/40 border-white/5'}`}>
             <div className={`absolute inset-0 transition-opacity duration-1000 ${isSaving ? 'opacity-10' : 'opacity-0'}`}>
-                <div className="absolute top-0 bottom-0 left-1/2 w-px bg-emerald-500/50 blur-[2px] animate-pulse" />
+                <div className={`absolute top-0 bottom-0 left-1/2 w-px blur-[2px] animate-pulse ${isChristmas ? 'bg-red-500/50' : 'bg-emerald-500/50'}`} />
             </div>
 
             <div className="relative z-10 flex-1 grid grid-cols-1 gap-6 items-center">
                 
                 {/* 1. RAM State */}
-                <div className="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${isChristmas ? 'bg-red-900/50 border-red-500/10' : 'bg-slate-900/50 border-white/5'}`}>
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg transition-colors duration-500 ${isSaving ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
-                            <Database className="w-5 h-5" />
+                        <div className={`p-2 rounded-lg transition-colors duration-500 ${isSaving ? (isChristmas ? 'bg-green-500/20 text-green-400' : 'bg-emerald-500/20 text-emerald-400') : 'bg-slate-800 text-slate-500'}`}>
+                            {isChristmas ? <Snowflake className="w-5 h-5" /> : <Database className="w-5 h-5" />}
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-300 uppercase">Memory (RAM)</span>
+                            <span className="text-[10px] font-bold text-slate-300 uppercase">{isChristmas ? 'Christmas RAM' : 'Memory (RAM)'}</span>
                             <span className="text-[9px] text-slate-500 font-mono">List: 12 records</span>
                         </div>
                     </div>
                     {isSaving && (
                         <div className="flex items-center gap-1">
-                            <span className="text-[8px] text-emerald-400 font-mono font-bold animate-pulse">JSON.DUMP()</span>
-                            <ArrowDown className="w-3 h-3 text-emerald-500 animate-bounce" />
+                            <span className={`text-[8px] font-mono font-bold animate-pulse ${isChristmas ? 'text-green-400' : 'text-emerald-400'}`}>JSON.DUMP()</span>
+                            <ArrowDown className={`w-3 h-3 animate-bounce ${isChristmas ? 'text-green-500' : 'text-emerald-500'}`} />
                         </div>
                     )}
                 </div>
@@ -208,22 +212,22 @@ const JsonVisualizer = () => {
                 {/* 2. IO Operations */}
                 <div className="flex justify-center relative py-2">
                     <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? 'bg-indigo-950/40 border-indigo-500/50 scale-110' : 'bg-slate-900 border-white/5'}`}>
-                            <Settings className={`w-5 h-5 ${isSaving ? 'text-indigo-400 animate-spin-slow' : 'text-slate-600'}`} />
+                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? (isChristmas ? 'bg-green-950/40 border-green-500/50 scale-110' : 'bg-indigo-950/40 border-indigo-500/50 scale-110') : 'bg-slate-900 border-white/5'}`}>
+                            <Settings className={`w-5 h-5 ${isSaving ? (isChristmas ? 'text-green-400 animate-spin-slow' : 'text-indigo-400 animate-spin-slow') : 'text-slate-600'}`} />
                         </div>
                         <style>{`@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .animate-spin-slow { animation: spin-slow 3s linear infinite; }`}</style>
-                        <div className={`h-px w-12 bg-gradient-to-r transition-opacity duration-500 ${isSaving ? 'from-indigo-500/50 to-emerald-500/50 opacity-100' : 'from-transparent to-transparent opacity-0'}`} />
-                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? 'bg-emerald-950/40 border-emerald-500/50 scale-110' : 'bg-slate-900 border-white/5'}`}>
-                            <Save className={`w-5 h-5 ${isSaving ? 'text-emerald-400' : 'text-slate-600'}`} />
+                        <div className={`h-px w-12 bg-gradient-to-r transition-opacity duration-500 ${isSaving ? (isChristmas ? 'from-green-500/50 to-red-500/50 opacity-100' : 'from-indigo-500/50 to-emerald-500/50 opacity-100') : 'from-transparent to-transparent opacity-0'}`} />
+                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? (isChristmas ? 'bg-red-950/40 border-red-500/50 scale-110' : 'bg-emerald-950/40 border-emerald-500/50 scale-110') : 'bg-slate-900 border-white/5'}`}>
+                            <Save className={`w-5 h-5 ${isSaving ? (isChristmas ? 'text-red-400' : 'text-emerald-400') : 'text-slate-600'}`} />
                         </div>
                     </div>
                 </div>
 
                 {/* 3. Disk Persistence */}
-                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-white/10 group">
+                <div className={`flex items-center justify-between p-3 rounded-xl border group transition-colors ${isChristmas ? 'bg-red-950 border-red-500/20' : 'bg-slate-950 border-white/10'}`}>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-500/80">
-                            <HardDrive className="w-5 h-5" />
+                        <div className={`p-2 rounded-lg ${isChristmas ? 'bg-green-500/10 text-green-500/80' : 'bg-yellow-500/10 text-yellow-500/80'}`}>
+                            {isChristmas ? <Gift className="w-5 h-5" /> : <HardDrive className="w-5 h-5" />}
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-white uppercase tracking-wider">output.json</span>
@@ -231,9 +235,9 @@ const JsonVisualizer = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <FileJson className={`w-5 h-5 transition-all duration-500 ${isSaving ? 'text-yellow-400 scale-125' : 'text-slate-700'}`} />
+                        <FileJson className={`w-5 h-5 transition-all duration-500 ${isSaving ? (isChristmas ? 'text-green-400 scale-125' : 'text-yellow-400 scale-125') : 'text-slate-700'}`} />
                         {isSaving && (
-                             <div className="px-1.5 py-0.5 rounded bg-emerald-500 text-[8px] font-black text-slate-950 animate-bounce">
+                             <div className={`px-1.5 py-0.5 rounded text-[8px] font-black text-slate-950 animate-bounce ${isChristmas ? 'bg-green-500' : 'bg-emerald-500'}`}>
                                 UPDATED
                              </div>
                         )}
@@ -245,7 +249,7 @@ const JsonVisualizer = () => {
     );
 };
 
-export const ThreadingExplanation: React.FC = () => {
+export const ThreadingExplanation: React.FC<ThreadingExplanationProps> = ({ isChristmas }) => {
     const [activeTab, setActiveTab] = useState<'threading' | 'io'>('threading');
     const [step, setStep] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -280,38 +284,36 @@ export const ThreadingExplanation: React.FC = () => {
     return (
         <div className="w-full max-w-5xl mx-auto space-y-6 animate-fade-in pb-12">
             
-            {/* Tabs Switcher - Reduced bottom margin */}
             <div className="flex justify-center">
-                <div className="flex bg-slate-900/80 p-1 rounded-xl border border-white/10 backdrop-blur-md shadow-2xl">
+                <div className={`flex p-1 rounded-xl border backdrop-blur-md shadow-2xl transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-900/80 border-white/10'}`}>
                     <button 
                         onClick={() => setActiveTab('threading')}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'threading' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20') : 'text-slate-500 hover:text-slate-300'}`}
                     >
                         <Layers className="w-4 h-4" />
-                        Multithreading
+                        {isChristmas ? 'Slitte Parallele' : 'Multithreading'}
                     </button>
                     <button 
                         onClick={() => setActiveTab('io')}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'io' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'io' ? (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20') : 'text-slate-500 hover:text-slate-300'}`}
                     >
                         <HardDrive className="w-4 h-4" />
-                        I/O Persistenza
+                        {isChristmas ? 'Dono Persistente' : 'I/O Persistenza'}
                     </button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 
-                {/* LEFT: Code View - Robust Height and Layout */}
-                <div className="relative bg-slate-900/60 rounded-2xl border border-white/10 overflow-hidden shadow-2xl backdrop-blur-md h-[550px] flex flex-col">
-                    <div className="flex items-center justify-between px-4 py-3 bg-slate-950/50 border-b border-white/5">
+                <div className={`relative rounded-2xl border overflow-hidden shadow-2xl backdrop-blur-md h-[550px] flex flex-col transition-colors duration-1000 ${isChristmas ? 'bg-red-950/60 border-red-500/20' : 'bg-slate-900/60 border-white/10'}`}>
+                    <div className={`flex items-center justify-between px-4 py-3 border-b transition-colors ${isChristmas ? 'bg-red-900/50 border-red-500/10' : 'bg-slate-950/50 border-white/5'}`}>
                         <div className="flex items-center gap-2 text-slate-400">
-                            <Server className="w-4 h-4 text-purple-400" />
-                            <span className="text-xs font-mono font-bold">server_v0.2.py</span>
+                            {isChristmas ? <Gift className="w-4 h-4 text-green-400" /> : <Server className="w-4 h-4 text-purple-400" />}
+                            <span className="text-xs font-mono font-bold">{isChristmas ? 'natale_v0.2.py' : 'server_v0.2.py'}</span>
                         </div>
                     </div>
 
-                    <div ref={containerRef} className="p-4 font-mono text-[13px] md:text-sm leading-relaxed overflow-y-auto flex-1 scroll-smooth">
+                    <div ref={containerRef} className="p-4 font-mono text-[13px] md:text-sm leading-relaxed overflow-y-auto flex-1 scroll-smooth no-scrollbar">
                         {THREAD_SERVER_LINES.map((line) => {
                              const isHighlighted = currentStepData?.highlightLines?.includes(line.id);
                              return (
@@ -320,7 +322,7 @@ export const ThreadingExplanation: React.FC = () => {
                                     id={`thread-line-${line.id}`}
                                     className={`relative pl-4 py-0.5 transition-all duration-300 rounded-sm
                                         ${isHighlighted 
-                                            ? (activeTab === 'threading' ? 'bg-cyan-500/10 border-l-2 border-cyan-400' : 'bg-emerald-500/10 border-l-2 border-emerald-400') 
+                                            ? (activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 border-l-2 border-green-400' : 'bg-cyan-500/10 border-l-2 border-cyan-400') : (isChristmas ? 'bg-red-500/10 border-l-2 border-red-400' : 'bg-emerald-500/10 border-l-2 border-emerald-400')) 
                                             : 'opacity-30'}
                                     `}
                                 >
@@ -335,11 +337,10 @@ export const ThreadingExplanation: React.FC = () => {
                     </div>
                 </div>
 
-                {/* RIGHT: Explanation Panel - Balanced height to match Code View */}
                 <div className="flex flex-col gap-6 h-full lg:h-[550px]">
-                    <div className="bg-slate-900/40 p-6 rounded-2xl border border-white/5 h-full flex flex-col backdrop-blur-sm shadow-xl">
+                    <div className={`p-6 rounded-2xl border h-full flex flex-col backdrop-blur-sm shadow-xl transition-colors duration-1000 ${isChristmas ? 'bg-red-900/40 border-red-500/10' : 'bg-slate-900/40 border-white/5'}`}>
                         <div className="mb-4 flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${activeTab === 'threading' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                            <div className={`p-2 rounded-lg transition-colors ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400' : 'bg-cyan-500/10 text-cyan-400') : (isChristmas ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400')}`}>
                                 <ChevronRight className="w-5 h-5" />
                             </div>
                             <h3 className="text-xl font-black text-white">{currentStepData?.title}</h3>
@@ -350,22 +351,22 @@ export const ThreadingExplanation: React.FC = () => {
                         </p>
 
                         <div className="flex-1 flex flex-col justify-center">
-                            {currentStepData?.visualizer === 'threads' && <ThreadsVisualizer />}
-                            {currentStepData?.visualizer === 'json' && <JsonVisualizer />}
+                            {currentStepData?.visualizer === 'threads' && <ThreadsVisualizer isChristmas={isChristmas} />}
+                            {currentStepData?.visualizer === 'json' && <JsonVisualizer isChristmas={isChristmas} />}
                         </div>
 
-                        <div className="mt-6 pt-6 border-t border-white/5 flex justify-between">
+                        <div className={`mt-6 pt-6 border-t flex justify-between ${isChristmas ? 'border-red-500/10' : 'border-white/5'}`}>
                              <button 
                                 onClick={() => setStep(s => Math.max(0, s - 1))}
                                 disabled={step === 0}
-                                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white disabled:opacity-20 flex items-center gap-2 transition-all"
+                                className={`px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white disabled:opacity-20 flex items-center gap-2 transition-all`}
                             >
                                 <ChevronLeft className="w-4 h-4" /> Indietro
                             </button>
                             <button 
                                  onClick={() => setStep(s => Math.min(currentSteps.length - 1, s + 1))}
                                  disabled={step === currentSteps.length - 1}
-                                 className={`px-6 py-2 rounded-lg text-sm font-bold shadow-lg disabled:opacity-20 flex items-center gap-2 transition-all ${activeTab === 'threading' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'}`}
+                                 className={`px-6 py-2 rounded-lg text-sm font-bold shadow-lg disabled:opacity-20 flex items-center gap-2 transition-all ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20') : (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20')}`}
                             >
                                 Avanti <ChevronRight className="w-4 h-4" />
                             </button>

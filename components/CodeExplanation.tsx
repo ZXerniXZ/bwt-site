@@ -1,6 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Code2, Network, Server, Laptop, Terminal } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Server, Laptop, Terminal, Snowflake, Gift } from 'lucide-react';
+
+interface CodeExplanationProps {
+  isChristmas?: boolean;
+}
 
 const ALGO_LINES = [
     { id: 0, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">bwt</span>(s):', indent: 0 },
@@ -113,9 +117,9 @@ const NETWORK_STEPS = [
     }
 ];
 
-const DynamicSlicingVisualizer = () => {
+const DynamicSlicingVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     const [cutIndex, setCutIndex] = useState(2);
-    const text = "BANANA$";
+    const text = isChristmas ? "CHRISTMAS$" : "BANANA$";
     const chars = text.split('');
     const boxWidth = 32; 
     const gap = 4;
@@ -129,16 +133,16 @@ const DynamicSlicingVisualizer = () => {
     };
 
     return (
-        <div className="mt-4 border border-white/5 rounded-xl p-4 bg-black/40 shadow-inner overflow-hidden">
+        <div className={`mt-4 border rounded-xl p-4 shadow-inner overflow-hidden transition-colors ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-black/40 border-white/5'}`}>
             <div className="flex justify-center mb-6 font-mono text-[10px] md:text-xs">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-white/5">
-                    <span className="text-cyan-400">s[{cutIndex}:]</span>
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors ${isChristmas ? 'bg-red-900 border-red-500/20' : 'bg-slate-900 border-white/5'}`}>
+                    <span className={isChristmas ? 'text-green-400' : 'text-cyan-400'}>s[{cutIndex}:]</span>
                     <span className="text-slate-600">+</span>
-                    <span className="text-purple-400">s[:{cutIndex}]</span>
+                    <span className={isChristmas ? 'text-red-400' : 'text-purple-400'}>s[:{cutIndex}]</span>
                 </div>
             </div>
 
-            <div className="relative h-16 w-full max-w-[260px] mx-auto">
+            <div className="relative h-16 w-full max-w-[320px] mx-auto">
                 {chars.map((char, index) => {
                     const isHead = index < cutIndex;
                     const finalX = getPosition(index);
@@ -147,11 +151,11 @@ const DynamicSlicingVisualizer = () => {
                             key={index}
                             className={`
                                 absolute top-0 flex items-center justify-center
-                                w-[32px] h-[40px] rounded-md font-bold text-sm
-                                transition-all duration-500 ease-out
+                                w-[30px] h-[38px] rounded-md font-bold text-xs
+                                transition-all duration-500 ease-out border
                                 ${isHead 
-                                    ? 'bg-indigo-900/30 text-indigo-400 border border-indigo-500/20' 
-                                    : 'bg-cyan-900/30 text-cyan-400 border border-cyan-500/20'}
+                                    ? (isChristmas ? 'bg-red-900/40 text-red-400 border-red-500/20' : 'bg-indigo-900/30 text-indigo-400 border-indigo-500/20') 
+                                    : (isChristmas ? 'bg-green-900/40 text-green-400 border-green-500/20' : 'bg-cyan-900/30 text-cyan-400 border-cyan-500/20')}
                             `}
                             style={{ transform: `translateX(${finalX}px)` }}
                         >
@@ -164,41 +168,47 @@ const DynamicSlicingVisualizer = () => {
                 <input 
                     type="range" min="0" max={text.length - 1} value={cutIndex}
                     onChange={(e) => setCutIndex(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-current ${isChristmas ? 'bg-red-900 text-red-500' : 'bg-slate-800 text-cyan-500'}`}
                 />
             </div>
         </div>
     );
 };
 
-const NetworkVisualizer = ({ step }: { step: number }) => {
+const NetworkVisualizer = ({ step, isChristmas }: { step: number, isChristmas?: boolean }) => {
     return (
-        <div className="relative h-48 md:h-56 bg-slate-900/50 rounded-xl border border-white/5 mt-4 overflow-hidden flex items-center justify-center p-6 select-none">
+        <div className={`relative h-48 md:h-56 rounded-xl border mt-4 overflow-hidden flex items-center justify-center p-6 select-none transition-colors ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-slate-900/50 border-white/5'}`}>
             <div className="flex items-center justify-between w-full max-w-sm relative z-10">
                 <div className={`flex flex-col items-center gap-1.5 transition-opacity ${step >= 1 ? 'opacity-100' : 'opacity-20'}`}>
-                    <div className="p-2.5 bg-cyan-900/30 border border-cyan-500/30 rounded-lg text-cyan-400 shadow-sm">
+                    <div className={`p-2.5 border rounded-lg shadow-sm ${isChristmas ? 'bg-green-900/30 border-green-500/30 text-green-400' : 'bg-cyan-900/30 border-cyan-500/30 text-cyan-400'}`}>
                         <Laptop className="w-6 h-6" />
                     </div>
-                    <span className="text-[10px] font-mono text-cyan-500">CLIENT</span>
+                    <span className={`text-[10px] font-mono ${isChristmas ? 'text-green-500' : 'text-cyan-500'}`}>CLIENT</span>
                 </div>
                 <div className="flex-1 h-px bg-slate-800 mx-3 relative">
-                    {step >= 1 && <div className="absolute inset-0 bg-cyan-500/40 animate-pulse" />}
+                    {step >= 1 && <div className={`absolute inset-0 animate-pulse ${isChristmas ? 'bg-red-500/40' : 'bg-cyan-500/40'}`} />}
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
-                    <div className={`p-2.5 border rounded-lg transition-all ${step === 0 ? 'bg-emerald-900/30 border-emerald-500/30 text-emerald-400' : 'bg-indigo-900/30 border-indigo-500/30 text-indigo-400'}`}>
+                    <div className={`p-2.5 border rounded-lg transition-all ${step === 0 ? (isChristmas ? 'bg-red-900/30 border-red-500/30 text-red-400' : 'bg-emerald-900/30 border-emerald-500/30 text-emerald-400') : (isChristmas ? 'bg-green-900/30 border-green-500/30 text-green-400' : 'bg-indigo-900/30 border-indigo-500/30 text-indigo-400')}`}>
                         <Server className="w-6 h-6" />
                     </div>
-                    <span className="text-[10px] font-mono text-indigo-500">SERVER</span>
+                    <span className={`text-[10px] font-mono ${isChristmas ? 'text-red-500' : 'text-indigo-500'}`}>SERVER</span>
                 </div>
             </div>
-            <div className="absolute bottom-3 text-[9px] font-mono text-slate-500 bg-slate-950/60 px-3 py-1 rounded-full border border-white/5">
+            {isChristmas && (
+                <div className="absolute top-4 flex gap-4 opacity-20">
+                    <Snowflake className="w-4 h-4 animate-bounce" />
+                    <Snowflake className="w-4 h-4 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                </div>
+            )}
+            <div className={`absolute bottom-3 text-[9px] font-mono px-3 py-1 rounded-full border ${isChristmas ? 'text-green-500 bg-red-950/60 border-red-500/10' : 'text-slate-500 bg-slate-950/60 border-white/5'}`}>
                 {step === 0 ? 'LISTENING' : step === 3 ? 'TRANSFERRING' : 'CONNECTED'}
             </div>
         </div>
     );
 };
 
-export const CodeExplanation: React.FC = () => {
+export const CodeExplanation: React.FC<CodeExplanationProps> = ({ isChristmas }) => {
   const [activeTab, setActiveTab] = useState<'algo' | 'network'>('algo');
   const [algoStep, setAlgoStep] = useState(0);
   const [netStep, setNetStep] = useState(0);
@@ -217,21 +227,24 @@ export const CodeExplanation: React.FC = () => {
     <div className="w-full max-w-5xl mx-auto space-y-6">
       
       <div className="flex justify-center">
-          <div className="flex bg-slate-900/80 p-1 rounded-xl border border-white/10 backdrop-blur-md">
-             <button onClick={() => setActiveTab('algo')} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'algo' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-500'}`}>
-                Algoritmo
+          <div className={`flex p-1 rounded-xl border backdrop-blur-md shadow-lg transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-900/80 border-white/10'}`}>
+             <button onClick={() => setActiveTab('algo')} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'algo' ? (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20') : 'text-slate-500'}`}>
+                {isChristmas ? 'Regole' : 'Algoritmo'}
              </button>
-             <button onClick={() => setActiveTab('network')} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'network' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-500'}`}>
-                Networking
+             <button onClick={() => setActiveTab('network')} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'network' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20') : 'text-slate-500'}`}>
+                {isChristmas ? 'Consegna' : 'Networking'}
              </button>
           </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           
-          <div className="bg-slate-950/80 rounded-2xl border border-white/10 overflow-hidden shadow-2xl backdrop-blur-md h-[400px] md:h-[450px] flex flex-col order-2 lg:order-1">
-            <div className="px-4 py-2.5 bg-slate-900 border-b border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-500">
-                <span className="flex items-center gap-2"><Terminal className="w-3 h-3" /> logic.py</span>
+          <div className={`rounded-2xl border overflow-hidden shadow-2xl backdrop-blur-md h-[400px] md:h-[450px] flex flex-col order-2 lg:order-1 transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-950/80 border-white/10'}`}>
+            <div className={`px-4 py-2.5 border-b flex items-center justify-between text-[10px] font-mono transition-colors ${isChristmas ? 'bg-red-900/40 border-red-500/10 text-red-400' : 'bg-slate-900 border-white/5 text-slate-500'}`}>
+                <span className="flex items-center gap-2">
+                    {isChristmas ? <Gift className="w-3 h-3" /> : <Terminal className="w-3 h-3" />}
+                    {isChristmas ? 'natale.py' : 'logic.py'}
+                </span>
             </div>
             <div ref={containerRef} className="p-4 md:p-6 font-mono text-[11px] md:text-sm leading-relaxed overflow-y-auto flex-1 no-scrollbar">
               {(activeTab === 'algo' ? ALGO_LINES : (NETWORK_STEPS[netStep].file === 'server' ? SERVER_FULL_LINES : CLIENT_FULL_LINES)).map((line, idx) => (
@@ -240,7 +253,7 @@ export const CodeExplanation: React.FC = () => {
                   id={activeTab === 'algo' ? `algo-line-${idx}` : `net-line-${idx}`}
                   className={`py-0.5 rounded px-2 transition-all ${
                     (activeTab === 'algo' ? algoStep === idx : NETWORK_STEPS[netStep].highlightLines.includes(idx)) 
-                    ? 'bg-cyan-500/10 opacity-100 border-l-2 border-cyan-500' 
+                    ? (isChristmas ? 'bg-red-500/20 border-l-2 border-red-500 opacity-100' : 'bg-cyan-500/10 border-l-2 border-cyan-500 opacity-100') 
                     : 'opacity-30'
                   }`}
                 >
@@ -251,7 +264,7 @@ export const CodeExplanation: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-4 order-1 lg:order-2">
-             <div className="bg-slate-900/40 p-5 md:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
+             <div className={`p-5 md:p-6 rounded-2xl border backdrop-blur-md transition-colors duration-1000 ${isChristmas ? 'bg-red-900/40 border-red-500/10' : 'bg-slate-900/40 border-white/5'}`}>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                     {activeTab === 'algo' ? ALGO_STEPS[algoStep].title : NETWORK_STEPS[netStep].title}
                 </h3>
@@ -259,19 +272,19 @@ export const CodeExplanation: React.FC = () => {
                     {activeTab === 'algo' ? ALGO_STEPS[algoStep].description : NETWORK_STEPS[netStep].description}
                 </p>
 
-                {activeTab === 'algo' && ALGO_STEPS[algoStep].hasVisualizer && <DynamicSlicingVisualizer />}
-                {activeTab === 'network' && <NetworkVisualizer step={netStep} />}
+                {activeTab === 'algo' && ALGO_STEPS[algoStep].hasVisualizer && <DynamicSlicingVisualizer isChristmas={isChristmas} />}
+                {activeTab === 'network' && <NetworkVisualizer step={netStep} isChristmas={isChristmas} />}
 
-                <div className="flex justify-between mt-6 pt-4 border-t border-white/5">
+                <div className={`flex justify-between mt-6 pt-4 border-t ${isChristmas ? 'border-red-500/10' : 'border-white/5'}`}>
                     <button 
                         onClick={() => activeTab === 'algo' ? setAlgoStep(s => Math.max(0, s - 1)) : setNetStep(s => Math.max(0, s - 1))}
-                        className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white"
+                        className={`px-4 py-2 text-xs font-bold transition-colors ${isChristmas ? 'text-red-400 hover:text-white' : 'text-slate-400 hover:text-white'}`}
                     >
                         Precedente
                     </button>
                     <button 
                         onClick={() => activeTab === 'algo' ? setAlgoStep(s => Math.min(ALGO_STEPS.length - 1, s + 1)) : setNetStep(s => Math.min(NETWORK_STEPS.length - 1, s + 1))}
-                        className="px-6 py-2 text-xs font-bold bg-white/5 text-white rounded-lg border border-white/10"
+                        className={`px-6 py-2 text-xs font-bold bg-white/5 text-white rounded-lg border transition-colors ${isChristmas ? 'border-red-500/20 hover:border-red-500/40' : 'border-white/10 hover:border-white/20'}`}
                     >
                         Successivo
                     </button>
