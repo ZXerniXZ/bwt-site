@@ -1,0 +1,5 @@
+{
+  "name": "BWT Thesis Visualizer",
+  "description": "Una presentazione interattiva della Burrows-Wheeler Transform per scopi didattici.",
+  "requestFramePermissions": []
+}
