@@ -27,21 +27,27 @@ const COMPOSE_LINES = [
 
 const BRIDGE_LINES = [
     { id: 0, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">connect_to_socket</span>(message):', indent: 0 },
-    { id: 1, html: '    <span class="text-purple-400">with</span> socket.socket(socket.AF_INET) <span class="text-purple-400">as</span> s:', indent: 0 },
-    { id: 2, html: '        s.connect((SOCKET_HOST, SOCKET_PORT))', indent: 1 },
-    { id: 3, html: '        s.send(message.encode())', indent: 1 },
-    { id: 4, html: '        <span class="text-slate-500 italic"># Converte HTTP in TCP Socket</span>', indent: 1 },
-    { id: 5, html: '        <span class="text-purple-400">return</span> pickle.loads(s.recv(<span class="text-orange-400">4096</span>))', indent: 1 },
-    { id: 6, html: '', indent: 0 },
-    { id: 7, html: '<span class="text-purple-400">@app.route</span>(<span class="text-emerald-400">"/api/bwt"</span>, methods=[<span class="text-emerald-400">"POST"</span>])', indent: 0 },
-    { id: 8, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">api_bwt</span>():', indent: 0 },
-    { id: 9, html: '    text = request.get_json().get(<span class="text-emerald-400">"text"</span>)', indent: 1 },
-    { id: 10, html: '    response = <span class="text-yellow-200">connect_to_socket</span>(text)', indent: 1 },
-    { id: 11, html: '    <span class="text-purple-400">return</span> jsonify(response)', indent: 1 },
-    { id: 12, html: '', indent: 0 },
-    { id: 13, html: '<span class="text-purple-400">@app.route</span>(<span class="text-emerald-400">"/api/output"</span>, methods=[<span class="text-emerald-400">"GET"</span>])', indent: 0 },
-    { id: 14, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">api_output</span>():', indent: 0 },
-    { id: 15, html: '    <span class="text-purple-400">return</span> <span class="text-yellow-200">connect_to_socket</span>(<span class="text-emerald-400">"GET_OUTPUT"</span>)', indent: 1 },
+    { id: 1, html: '    <span class="text-purple-400">try</span>:', indent: 0 },
+    { id: 2, html: '        <span class="text-purple-400">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="text-purple-400">as</span> s:', indent: 1 },
+    { id: 3, html: '            s.connect((SOCKET_HOST, SOCKET_PORT))', indent: 2 },
+    { id: 4, html: '            s.send(message.encode())', indent: 2 },
+    { id: 5, html: '            data = s.recv(<span class="text-orange-400">4096</span>)', indent: 2 },
+    { id: 6, html: '            <span class="text-purple-400">return</span> pickle.loads(data)', indent: 2 },
+    { id: 7, html: '    <span class="text-purple-400">except</span> Exception <span class="text-purple-400">as</span> e:', indent: 1 },
+    { id: 8, html: '        <span class="text-purple-400">return</span> {<span class="text-emerald-400">"error"</span>: <span class="text-cyan-400">str</span>(e)}', indent: 2 },
+    { id: 9, html: '', indent: 0 },
+    { id: 10, html: '<span class="text-slate-500 italic"># --- API GATEWAY BRIDGE PORTION ---</span>', indent: 0 },
+    { id: 11, html: '<span class="text-purple-400">@app.route</span>(<span class="text-emerald-400">"/api/bwt"</span>, methods=[<span class="text-emerald-400">"POST"</span>])', indent: 0 },
+    { id: 12, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">api_bwt</span>():', indent: 0 },
+    { id: 13, html: '    data = request.get_json()', indent: 1 },
+    { id: 14, html: '    text = data.get(<span class="text-emerald-400">"text"</span>, <span class="text-emerald-400">""</span>)', indent: 1 },
+    { id: 15, html: '    response = <span class="text-yellow-200">connect_to_socket</span>(text)', indent: 1 },
+    { id: 16, html: '    <span class="text-purple-400">return</span> jsonify(response)', indent: 1 },
+    { id: 17, html: '', indent: 0 },
+    { id: 18, html: '<span class="text-purple-400">@app.route</span>(<span class="text-emerald-400">"/api/output"</span>, methods=[<span class="text-emerald-400">"GET"</span>])', indent: 0 },
+    { id: 19, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">api_output</span>():', indent: 0 },
+    { id: 20, html: '    response = <span class="text-yellow-200">connect_to_socket</span>(KEYWORD_GET_OUTPUT)', indent: 1 },
+    { id: 21, html: '    <span class="text-purple-400">return</span> jsonify(response)', indent: 1 },
 ];
 
 const STEPS = [
@@ -209,7 +215,7 @@ export const DockerExplanation: React.FC<DockerExplanationProps> = ({ isChristma
              </div>
              <div className="p-4 md:p-6 font-mono text-[11px] md:text-sm leading-relaxed overflow-y-auto flex-1 no-scrollbar">
                 {currentStep.lines.map((line, idx) => (
-                    <div key={idx} className={`py-0.5 rounded px-2 transition-colors ${stepIdx === 2 && idx >= 7 ? (isChristmas ? 'bg-red-500/20 border-l-2 border-red-500' : 'bg-cyan-500/10 border-l-2 border-cyan-500') : 'hover:bg-white/5'}`}>
+                    <div key={idx} className={`py-0.5 rounded px-2 transition-colors ${stepIdx === 2 && idx >= 10 ? (isChristmas ? 'bg-red-500/20 border-l-2 border-red-500' : 'bg-cyan-500/10 border-l-2 border-cyan-500') : 'hover:bg-white/5'}`}>
                         <span dangerouslySetInnerHTML={{ __html: '&nbsp;'.repeat((line.indent || 0) * 4) + line.html }} />
                     </div>
                 ))}
