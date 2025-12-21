@@ -59,7 +59,7 @@ export default function App() {
              />
           </section>
 
-          {/* TOP ATMOSPHERIC BRIDGE - Transizione Hero -> Contenuto (ridotto) */}
+          {/* TOP ATMOSPHERIC BRIDGE - Transizione Hero -> Contenuto */}
           <div 
             className={`h-[25vh] w-full pointer-events-none relative z-10 -mt-[25vh] ${
                 isChristmas 
@@ -94,7 +94,7 @@ export default function App() {
                 </section>
               </div>
 
-              {/* BOTTOM ATMOSPHERIC BRIDGE - Transizione Contenuto -> Timeline (molto ridotto) */}
+              {/* BOTTOM ATMOSPHERIC BRIDGE */}
               <div 
                 className={`h-[20vh] w-full pointer-events-none absolute bottom-0 left-0 translate-y-full z-20 ${
                     isChristmas 
@@ -118,7 +118,7 @@ export default function App() {
       </main>
 
       <Footer />
-//ciaooo
+
       <style>{`
         @keyframes global-snow {
             0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }

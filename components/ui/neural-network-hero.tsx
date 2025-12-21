@@ -1,15 +1,9 @@
-'use client';
-
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
-import * as THREE from 'this-is-not-real-path-but-three'; // Usiamo l'importmap
-import * as THREE_LIB from 'three';
+import * as THREE from 'three';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-
-// Nota: l'importmap gestisce 'three'
-const THREE_NS = THREE_LIB;
 
 // ===================== SHADER =====================
 const vertexShader = `
@@ -149,7 +143,7 @@ const fragmentShader = `
 `;
 
 const CPPNShaderMaterial = shaderMaterial(
-  { iTime: 0, iResolution: new THREE_NS.Vector2(1, 1) },
+  { iTime: 0, iResolution: new THREE.Vector2(1, 1) },
   vertexShader,
   fragmentShader
 );
@@ -157,7 +151,7 @@ const CPPNShaderMaterial = shaderMaterial(
 extend({ CPPNShaderMaterial });
 
 function ShaderPlane() {
-  const meshRef = useRef<THREE_LIB.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
   const materialRef = useRef<any>(null!);
 
   useFrame((state) => {
@@ -174,7 +168,7 @@ function ShaderPlane() {
   return (
     <Mesh ref={meshRef} position={[0, -1.2, 0]}>
       <PlaneGeometry args={[4, 4]} />
-      <CustomShaderMaterial ref={materialRef} side={THREE_NS.DoubleSide} />
+      <CustomShaderMaterial ref={materialRef} side={THREE.DoubleSide} />
     </Mesh>
   );
 }
