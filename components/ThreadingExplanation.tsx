@@ -6,7 +6,6 @@ interface ThreadingExplanationProps {
   isChristmas?: boolean;
 }
 
-// --- DATA: SERVER CODE (THREADING & JSON) ---
 const THREAD_SERVER_LINES = [
     { id: 0, html: '<span class="text-purple-400">import</span> socket', indent: 0 },
     { id: 1, html: '<span class="text-purple-400">import</span> threading', indent: 0 },
@@ -25,7 +24,7 @@ const THREAD_SERVER_LINES = [
     { id: 14, html: 'json.<span class="text-cyan-400">dump</span>(data, f, indent=<span class="text-orange-400">4</span>)', indent: 2 },
     { id: 15, html: '', indent: 0 },
     { id: 16, html: '<span class="text-purple-400">def</span> <span class="text-yellow-200">handle_client</span>(conn, addr):', indent: 0 },
-    { id: 17, html: '<span class="text-slate-500 italic"># ... ricezione e calcolo BWT ...</span>', indent: 1 },
+    { id: 17, html: '<span class="text-slate-500 italic"># ... calcolo BWT ...</span>', indent: 1 },
     { id: 18, html: 'data_to_save = { ... }', indent: 1 },
     { id: 19, html: '<span class="text-yellow-200">salva_record</span>(data_to_save)', indent: 1 },
     { id: 20, html: '', indent: 0 },
@@ -39,19 +38,19 @@ const THREAD_SERVER_LINES = [
 const THREADING_STEPS = [
   {
     title: "Import Threading",
-    description: "Per permettere al server di gestire più client contemporaneamente, importiamo il modulo `threading`. Questo ci permette di creare flussi di esecuzione paralleli indipendenti.",
+    description: "Per gestire più client contemporaneamente, usiamo il modulo `threading`.",
     highlightLines: [1],
     visualizer: 'threads'
   },
   {
-    title: "Il Main Loop Non-Bloccante",
-    description: "Il ciclo `while True` accetta le connessioni. Appena un client arriva (`accept`), non lo gestiamo direttamente nel loop principale, altrimenti il server si bloccherebbe per gli altri utenti durante l'elaborazione.",
+    title: "Il Main Loop",
+    description: "Il ciclo `while True` accetta le connessioni. Appena un client arriva, deleghiamo il lavoro.",
     highlightLines: [22, 23],
     visualizer: 'threads'
   },
   {
-    title: "Creazione del Thread",
-    description: "Creiamo un oggetto `Thread` assegnandogli la funzione `handle_client` e i relativi argomenti. Con `t.start()`, il sistema operativo avvia l'esecuzione parallela, liberando subito il Main Loop per la prossima connessione.",
+    title: "Esecuzione Parallela",
+    description: "Con `t.start()`, il sistema operativo avvia l'esecuzione parallela.",
     highlightLines: [24, 25],
     visualizer: 'threads'
   }
@@ -60,25 +59,23 @@ const THREADING_STEPS = [
 const IO_STEPS = [
   {
     title: "Import JSON & OS",
-    description: "Per la persistenza dei dati usiamo il formato JSON. `os` ci serve per verificare se il file `output.json` è già presente sul disco rigido.",
+    description: "La persistenza avviene tramite file JSON. Verifichiamo l'esistenza del file fisico.",
     highlightLines: [2, 3],
     visualizer: 'json'
   },
   {
-    title: "Lettura e Aggiornamento",
-    description: "Carichiamo la lista esistente dal file JSON. Se il file non esiste, iniziamo con una lista vuata. Aggiungiamo poi il nuovo record calcolato in RAM.",
+    title: "Update in RAM",
+    description: "Carichiamo la lista dal file JSON. Se il file non esiste, iniziamo con una lista vuota.",
     highlightLines: [7, 8, 9, 10, 11, 12],
     visualizer: 'json'
   },
   {
     title: "Salvataggio Fisico",
-    description: "Infine, serializziamo la struttura dati e la scriviamo fisicamente sul disco. Il parametro `indent=4` rende il file facilmente leggibile aprendolo con un editor.",
+    description: "Serializziamo la struttura dati e la scriviamo sul disco in modo persistente.",
     highlightLines: [13, 14],
     visualizer: 'json'
   }
 ];
-
-// --- VISUALIZERS ---
 
 const ThreadsVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     const [threads, setThreads] = useState<{id: number, active: boolean, status: string}[]>([]);
@@ -88,92 +85,53 @@ const ThreadsVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
         const interval = setInterval(() => {
             setIncomingPulse(true);
             setTimeout(() => setIncomingPulse(false), 300);
-
             const newId = Date.now();
             setThreads(prev => [...prev, {id: newId, active: true, status: 'spawned'}].slice(-3)); 
-            
             setTimeout(() => {
                 setThreads(prev => prev.map(t => t.id === newId ? {...t, status: 'working'} : t));
             }, 600);
-
             setTimeout(() => {
                 setThreads(prev => prev.map(t => t.id === newId ? {...t, active: false} : t));
             }, 4000);
-
         }, 2500);
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <div className={`mt-4 border rounded-2xl p-6 relative overflow-hidden h-[260px] flex flex-col shadow-2xl transition-colors ${isChristmas ? 'bg-red-950/60 border-red-500/20' : 'bg-slate-950/60 border-white/5'}`}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(34,211,238,0.02)_1px,_transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
-
-            {/* Top Bar: Client & Server Listener */}
-            <div className="flex items-center justify-between mb-8 relative z-10 px-2">
-                <div className="flex flex-col items-center gap-1">
-                    <div className={`p-3 rounded-full transition-all duration-300 ${incomingPulse ? (isChristmas ? 'bg-green-500/20 scale-110 shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-cyan-500/20 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.4)]') : 'bg-slate-900/50'}`}>
-                        {isChristmas ? <Gift className={`w-5 h-5 ${incomingPulse ? 'text-green-400' : 'text-slate-600'}`} /> : <User className={`w-5 h-5 ${incomingPulse ? 'text-cyan-400' : 'text-slate-600'}`} />}
-                    </div>
-                    <span className="text-[10px] text-slate-500 font-mono font-bold uppercase tracking-widest">{isChristmas ? 'Regalo' : 'Client'}</span>
+        <div className={`mt-4 border rounded-xl p-4 md:p-6 relative h-[200px] flex flex-col shadow-inner transition-colors overflow-hidden ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-slate-950/60 border-white/5'}`}>
+            <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className={`p-3 rounded-full ${incomingPulse ? (isChristmas ? 'bg-green-500/30' : 'bg-cyan-500/30') : 'bg-slate-900/50'}`}>
+                    {isChristmas ? <Gift className="w-5 h-5" /> : <User className="w-5 h-5" />}
                 </div>
-
-                <div className="flex-1 px-4 flex justify-center">
-                    <div className="w-full max-w-[100px] h-px bg-slate-800 relative overflow-hidden">
+                <div className="flex-1 px-4">
+                    <div className="w-full h-1 bg-slate-800 relative overflow-hidden rounded-full">
                         {incomingPulse && <div className={`absolute inset-0 animate-[move_0.5s_linear_infinite] ${isChristmas ? 'bg-green-400' : 'bg-cyan-400'}`} />}
-                        <style>{`@keyframes move { from { transform: translateX(-100%); } to { transform: translateX(100%); } }`}</style>
                     </div>
                 </div>
-
-                <div className="flex flex-col items-center gap-1">
-                    <div className={`p-3 rounded-xl border-2 transition-all duration-300 ${incomingPulse ? (isChristmas ? 'border-red-400 bg-red-950/30' : 'border-cyan-400 bg-cyan-950/30') : 'border-slate-800 bg-slate-900/80'}`}>
-                        <Server className={`w-5 h-5 ${incomingPulse ? (isChristmas ? 'text-red-400' : 'text-cyan-400') : 'text-slate-400'}`} />
-                    </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isChristmas ? 'text-red-400' : 'text-cyan-400'}`}>Server (accept)</span>
+                <div className={`p-3 rounded-lg border transition-all ${incomingPulse ? (isChristmas ? 'border-red-400' : 'border-cyan-400') : 'border-slate-800'}`}>
+                    <Server className="w-5 h-5" />
                 </div>
             </div>
 
-            {/* Bottom Section: Dedicated Worker Slots */}
-            <div className="flex-1 grid grid-cols-3 gap-3 relative z-10">
+            <div className="flex-1 grid grid-cols-3 gap-3 relative z-10 overflow-visible">
                 {[0, 1, 2].map((slotIndex) => {
-                    // Fix: Use 'threads' (plural) to refer to the state array instead of 'thread' (singular)
                     const thread = threads[slotIndex];
                     const isOccupied = thread && thread.active;
-                    
                     return (
-                        <div 
-                            key={slotIndex}
-                            className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-500 h-full
-                                ${isOccupied 
-                                    ? (thread.status === 'working' ? (isChristmas ? 'bg-green-950/30 border-green-500/50 shadow-green-500/10' : 'bg-indigo-950/30 border-indigo-500/50 shadow-indigo-500/10') : 'bg-slate-900 border-slate-700 opacity-60') 
-                                    : 'bg-slate-950/50 border-white/5 opacity-20'}
-                            `}
-                        >
-                            <Cpu className={`w-6 h-6 mb-2 ${isOccupied && thread.status === 'working' ? (isChristmas ? 'text-green-400 animate-pulse' : 'text-indigo-400 animate-pulse') : 'text-slate-600'}`} />
-                            <div className="flex flex-col items-center text-center">
-                                <span className={`text-[10px] font-bold ${isOccupied ? (isChristmas ? 'text-green-300' : 'text-indigo-300') : 'text-slate-700'}`}>
-                                    {isOccupied ? `Thread-${slotIndex + 1}` : 'IDLE'}
-                                </span>
-                                {isOccupied && (
-                                    <span className="text-[8px] text-slate-500 font-mono mt-1 leading-tight">
-                                        {thread.status === 'working' ? (isChristmas ? 'Sorting Sled' : 'Executing BWT') : 'Spawning...'}
-                                    </span>
-                                )}
-                            </div>
+                        <div key={slotIndex} className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all duration-700 h-full ${isOccupied ? (thread.status === 'working' ? (isChristmas ? 'bg-green-950/50 border-green-500/60 scale-105' : 'bg-indigo-950/50 border-indigo-500/60 scale-105') : 'bg-slate-900 border-slate-700 opacity-60') : 'bg-slate-950/50 border-white/5 opacity-20'}`}>
+                            <Cpu className={`w-6 h-6 mb-1 ${isOccupied && thread.status === 'working' ? (isChristmas ? 'text-green-400 animate-pulse' : 'text-indigo-400 animate-pulse') : 'text-slate-600'}`} />
+                            <span className="text-[8px] font-black">{isOccupied ? 'THREAD' : 'IDLE'}</span>
                         </div>
                     );
                 })}
             </div>
-
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] text-slate-700 font-mono uppercase tracking-[0.3em]">
-                {isChristmas ? 'CHRISTMAS PARALLEL LAYER' : 'Parallel Execution Layer'}
-            </div>
+            <style>{`@keyframes move { from { transform: translateX(-100%); } to { transform: translateX(100%); } }`}</style>
         </div>
     );
 };
 
 const JsonVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     const [isSaving, setIsSaving] = useState(false);
-    
     useEffect(() => {
         const interval = setInterval(() => {
             setIsSaving(true);
@@ -183,67 +141,19 @@ const JsonVisualizer = ({ isChristmas }: { isChristmas?: boolean }) => {
     }, []);
 
     return (
-        <div className={`mt-4 border rounded-2xl p-6 relative overflow-hidden h-[260px] flex flex-col shadow-inner select-none transition-colors duration-1000 ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-slate-950/40 border-white/5'}`}>
-            <div className={`absolute inset-0 transition-opacity duration-1000 ${isSaving ? 'opacity-10' : 'opacity-0'}`}>
-                <div className={`absolute top-0 bottom-0 left-1/2 w-px blur-[2px] animate-pulse ${isChristmas ? 'bg-red-500/50' : 'bg-emerald-500/50'}`} />
-            </div>
-
-            <div className="relative z-10 flex-1 grid grid-cols-1 gap-6 items-center">
-                
-                {/* 1. RAM State */}
-                <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${isChristmas ? 'bg-red-900/50 border-red-500/10' : 'bg-slate-900/50 border-white/5'}`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg transition-colors duration-500 ${isSaving ? (isChristmas ? 'bg-green-500/20 text-green-400' : 'bg-emerald-500/20 text-emerald-400') : 'bg-slate-800 text-slate-500'}`}>
-                            {isChristmas ? <Snowflake className="w-5 h-5" /> : <Database className="w-5 h-5" />}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-300 uppercase">{isChristmas ? 'Christmas RAM' : 'Memory (RAM)'}</span>
-                            <span className="text-[9px] text-slate-500 font-mono">List: 12 records</span>
-                        </div>
-                    </div>
-                    {isSaving && (
-                        <div className="flex items-center gap-1">
-                            <span className={`text-[8px] font-mono font-bold animate-pulse ${isChristmas ? 'text-green-400' : 'text-emerald-400'}`}>JSON.DUMP()</span>
-                            <ArrowDown className={`w-3 h-3 animate-bounce ${isChristmas ? 'text-green-500' : 'text-emerald-500'}`} />
-                        </div>
-                    )}
+        <div className={`mt-4 border rounded-xl p-4 md:p-6 relative overflow-hidden h-[200px] flex flex-col shadow-inner transition-colors duration-1000 ${isChristmas ? 'bg-red-950/40 border-red-500/20' : 'bg-slate-950/40 border-white/5'}`}>
+            <div className="relative z-10 flex-1 flex flex-col justify-between gap-2">
+                <div className={`flex items-center gap-3 p-3 rounded-xl border ${isChristmas ? 'bg-red-900/60 border-red-500/30' : 'bg-slate-900/60 border-white/10'}`}>
+                    <Database className={`w-6 h-6 ${isSaving ? (isChristmas ? 'text-green-400' : 'text-emerald-400') : 'text-slate-500'}`} />
+                    <span className="text-[10px] font-bold text-slate-100 uppercase tracking-widest">Memory RAM</span>
                 </div>
-
-                {/* 2. IO Operations */}
-                <div className="flex justify-center relative py-2">
-                    <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? (isChristmas ? 'bg-green-950/40 border-green-500/50 scale-110' : 'bg-indigo-950/40 border-indigo-500/50 scale-110') : 'bg-slate-900 border-white/5'}`}>
-                            <Settings className={`w-5 h-5 ${isSaving ? (isChristmas ? 'text-green-400 animate-spin-slow' : 'text-indigo-400 animate-spin-slow') : 'text-slate-600'}`} />
-                        </div>
-                        <style>{`@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .animate-spin-slow { animation: spin-slow 3s linear infinite; }`}</style>
-                        <div className={`h-px w-12 bg-gradient-to-r transition-opacity duration-500 ${isSaving ? (isChristmas ? 'from-green-500/50 to-red-500/50 opacity-100' : 'from-indigo-500/50 to-emerald-500/50 opacity-100') : 'from-transparent to-transparent opacity-0'}`} />
-                        <div className={`p-2 rounded-full border transition-all duration-700 ${isSaving ? (isChristmas ? 'bg-red-950/40 border-red-500/50 scale-110' : 'bg-emerald-950/40 border-emerald-500/50 scale-110') : 'bg-slate-900 border-white/5'}`}>
-                            <Save className={`w-5 h-5 ${isSaving ? (isChristmas ? 'text-red-400' : 'text-emerald-400') : 'text-slate-600'}`} />
-                        </div>
-                    </div>
+                <div className="flex justify-center">
+                    <Save className={`w-5 h-5 ${isSaving ? 'text-indigo-400 animate-bounce' : 'text-slate-700'}`} />
                 </div>
-
-                {/* 3. Disk Persistence */}
-                <div className={`flex items-center justify-between p-3 rounded-xl border group transition-colors ${isChristmas ? 'bg-red-950 border-red-500/20' : 'bg-slate-950 border-white/10'}`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isChristmas ? 'bg-green-500/10 text-green-500/80' : 'bg-yellow-500/10 text-yellow-500/80'}`}>
-                            {isChristmas ? <Gift className="w-5 h-5" /> : <HardDrive className="w-5 h-5" />}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">output.json</span>
-                            <span className="text-[9px] text-slate-500 font-mono">Size: 2.4 KB</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <FileJson className={`w-5 h-5 transition-all duration-500 ${isSaving ? (isChristmas ? 'text-green-400 scale-125' : 'text-yellow-400 scale-125') : 'text-slate-700'}`} />
-                        {isSaving && (
-                             <div className={`px-1.5 py-0.5 rounded text-[8px] font-black text-slate-950 animate-bounce ${isChristmas ? 'bg-green-500' : 'bg-emerald-500'}`}>
-                                UPDATED
-                             </div>
-                        )}
-                    </div>
+                <div className={`flex items-center gap-3 p-3 rounded-xl border ${isChristmas ? 'bg-red-950 border-red-500' : 'bg-slate-950 border-white/10'}`}>
+                    <HardDrive className="w-6 h-6 text-white" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">output.json</span>
                 </div>
-
             </div>
         </div>
     );
@@ -253,127 +163,57 @@ export const ThreadingExplanation: React.FC<ThreadingExplanationProps> = ({ isCh
     const [activeTab, setActiveTab] = useState<'threading' | 'io'>('threading');
     const [step, setStep] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
-
     const currentSteps = activeTab === 'threading' ? THREADING_STEPS : IO_STEPS;
     const currentStepData = currentSteps[step] || currentSteps[0];
 
-    const scrollToLine = (lineIndex: number) => {
-        if (!containerRef.current) return;
-        const element = document.getElementById(`thread-line-${lineIndex}`);
-        if (!element) return;
-        
-        const container = containerRef.current;
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        const offset = elementRect.top - containerRect.top;
-        const targetScroll = container.scrollTop + offset - (container.clientHeight / 2) + (elementRect.height / 2);
-
-        container.scrollTo({ top: targetScroll, behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        setStep(0);
-    }, [activeTab]);
-
-    useEffect(() => {
-        if (currentStepData && currentStepData.highlightLines && currentStepData.highlightLines.length > 0) {
-            scrollToLine(currentStepData.highlightLines[0]);
-        }
-    }, [step, activeTab, currentStepData]);
-
     return (
-        <div className="w-full max-w-5xl mx-auto space-y-6 animate-fade-in pb-12">
-            
+        <div className="w-full max-w-5xl mx-auto space-y-6">
             <div className="flex justify-center">
-                <div className={`flex p-1 rounded-xl border backdrop-blur-md shadow-2xl transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-900/80 border-white/10'}`}>
-                    <button 
-                        onClick={() => setActiveTab('threading')}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20') : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        <Layers className="w-4 h-4" />
-                        {isChristmas ? 'Slitte Parallele' : 'Multithreading'}
+                <div className={`flex p-1 rounded-xl border backdrop-blur-md shadow-lg transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-900/80 border-white/10'}`}>
+                    <button onClick={() => { setActiveTab('threading'); setStep(0); }} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'threading' ? (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20') : 'text-slate-50'}`}>
+                        Multithread
                     </button>
-                    <button 
-                        onClick={() => setActiveTab('io')}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'io' ? (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20') : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        <HardDrive className="w-4 h-4" />
-                        {isChristmas ? 'Dono Persistente' : 'I/O Persistenza'}
+                    <button onClick={() => { setActiveTab('io'); setStep(0); }} className={`px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${activeTab === 'io' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20') : 'text-slate-500'}`}>
+                        Persistenza
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                
-                <div className={`relative rounded-2xl border overflow-hidden shadow-2xl backdrop-blur-md h-[550px] flex flex-col transition-colors duration-1000 ${isChristmas ? 'bg-red-950/60 border-red-500/20' : 'bg-slate-900/60 border-white/10'}`}>
-                    <div className={`flex items-center justify-between px-4 py-3 border-b transition-colors ${isChristmas ? 'bg-red-900/50 border-red-500/10' : 'bg-slate-950/50 border-white/5'}`}>
-                        <div className="flex items-center gap-2 text-slate-400">
-                            {isChristmas ? <Gift className="w-4 h-4 text-green-400" /> : <Server className="w-4 h-4 text-purple-400" />}
-                            <span className="text-xs font-mono font-bold">{isChristmas ? 'natale_v0.2.py' : 'server_v0.2.py'}</span>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className={`rounded-2xl border overflow-hidden shadow-2xl backdrop-blur-md h-[400px] md:h-[450px] flex flex-col order-2 lg:order-1 transition-colors duration-1000 ${isChristmas ? 'bg-red-950/80 border-red-500/20' : 'bg-slate-950/80 border-white/10'}`}>
+                    <div className={`px-4 py-2.5 border-b flex items-center justify-between text-[10px] font-mono transition-colors ${isChristmas ? 'bg-red-900/40 border-red-500/10 text-red-400' : 'bg-slate-900 border-white/5 text-slate-500'}`}>
+                        <span className="flex items-center gap-2">
+                            <Settings className="w-3 h-3" />
+                            server_v2.py
+                        </span>
                     </div>
-
-                    <div ref={containerRef} className="p-4 font-mono text-[13px] md:text-sm leading-relaxed overflow-y-auto flex-1 scroll-smooth no-scrollbar">
-                        {THREAD_SERVER_LINES.map((line) => {
-                             const isHighlighted = currentStepData?.highlightLines?.includes(line.id);
-                             return (
-                                <div 
-                                    key={line.id}
-                                    id={`thread-line-${line.id}`}
-                                    className={`relative pl-4 py-0.5 transition-all duration-300 rounded-sm
-                                        ${isHighlighted 
-                                            ? (activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 border-l-2 border-green-400' : 'bg-cyan-500/10 border-l-2 border-cyan-400') : (isChristmas ? 'bg-red-500/10 border-l-2 border-red-400' : 'bg-emerald-500/10 border-l-2 border-emerald-400')) 
-                                            : 'opacity-30'}
-                                    `}
-                                >
-                                    <span className="text-slate-600 select-none mr-4 w-6 inline-block text-right text-[10px] opacity-50">{line.id + 1}</span>
-                                    <span 
-                                        style={{ paddingLeft: `${line.indent * 1.5}rem` }}
-                                        dangerouslySetInnerHTML={{ __html: line.html || '&nbsp;' }} 
-                                    />
-                                </div>
-                             );
-                        })}
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-6 h-full lg:h-[550px]">
-                    <div className={`p-6 rounded-2xl border h-full flex flex-col backdrop-blur-sm shadow-xl transition-colors duration-1000 ${isChristmas ? 'bg-red-900/40 border-red-500/10' : 'bg-slate-900/40 border-white/5'}`}>
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className={`p-2 rounded-lg transition-colors ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400' : 'bg-cyan-500/10 text-cyan-400') : (isChristmas ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400')}`}>
-                                <ChevronRight className="w-5 h-5" />
+                    <div ref={containerRef} className="p-4 md:p-6 font-mono text-[11px] md:text-sm leading-relaxed overflow-y-auto flex-1 no-scrollbar">
+                        {THREAD_SERVER_LINES.map((line) => (
+                            <div key={line.id} className={`py-0.5 rounded px-2 transition-all ${currentStepData?.highlightLines?.includes(line.id) ? (isChristmas ? 'bg-red-500/20 border-l-2 border-red-500 opacity-100' : 'bg-cyan-500/10 border-l-2 border-cyan-500 opacity-100') : 'opacity-30'}`}>
+                                <span dangerouslySetInnerHTML={{ __html: '&nbsp;'.repeat(line.indent * 4) + line.html || '&nbsp;' }} />
                             </div>
-                            <h3 className="text-xl font-black text-white">{currentStepData?.title}</h3>
-                        </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-4 order-1 lg:order-2">
+                    <div className={`p-5 md:p-6 rounded-2xl border backdrop-blur-md transition-colors duration-1000 ${isChristmas ? 'bg-red-900/40 border-red-500/10' : 'bg-slate-900/40 border-white/5'}`}>
+                        <h3 className="text-lg md:text-xl font-bold text-white mb-2">{currentStepData?.title}</h3>
+                        <p className="text-slate-300 text-sm leading-relaxed mb-4 font-medium">{currentStepData?.description}</p>
                         
-                        <p className="text-slate-300 leading-relaxed mb-6 text-sm md:text-base">
-                            {currentStepData?.description}
-                        </p>
+                        {currentStepData?.visualizer === 'threads' && <ThreadsVisualizer isChristmas={isChristmas} />}
+                        {currentStepData?.visualizer === 'json' && <JsonVisualizer isChristmas={isChristmas} />}
 
-                        <div className="flex-1 flex flex-col justify-center">
-                            {currentStepData?.visualizer === 'threads' && <ThreadsVisualizer isChristmas={isChristmas} />}
-                            {currentStepData?.visualizer === 'json' && <JsonVisualizer isChristmas={isChristmas} />}
-                        </div>
-
-                        <div className={`mt-6 pt-6 border-t flex justify-between ${isChristmas ? 'border-red-500/10' : 'border-white/5'}`}>
-                             <button 
-                                onClick={() => setStep(s => Math.max(0, s - 1))}
-                                disabled={step === 0}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white disabled:opacity-20 flex items-center gap-2 transition-all`}
-                            >
-                                <ChevronLeft className="w-4 h-4" /> Indietro
+                        <div className={`flex justify-between mt-6 pt-4 border-t ${isChristmas ? 'border-red-500/10' : 'border-white/5'}`}>
+                            <button onClick={() => setStep(s => Math.max(0, s - 1))} className={`px-4 py-2 text-xs font-bold transition-colors ${isChristmas ? 'text-red-400' : 'text-slate-400'}`} disabled={step === 0}>
+                                Precedente
                             </button>
-                            <button 
-                                 onClick={() => setStep(s => Math.min(currentSteps.length - 1, s + 1))}
-                                 disabled={step === currentSteps.length - 1}
-                                 className={`px-6 py-2 rounded-lg text-sm font-bold shadow-lg disabled:opacity-20 flex items-center gap-2 transition-all ${activeTab === 'threading' ? (isChristmas ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20') : (isChristmas ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20')}`}
-                            >
-                                Avanti <ChevronRight className="w-4 h-4" />
+                            <button onClick={() => setStep(s => Math.min(currentSteps.length - 1, s + 1))} className={`px-6 py-2 text-xs font-bold bg-white/5 text-white rounded-lg border transition-colors ${isChristmas ? 'border-red-500/20' : 'border-white/10'}`} disabled={step === currentSteps.length - 1}>
+                                Successivo
                             </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

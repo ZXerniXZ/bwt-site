@@ -38,7 +38,7 @@ export const Timeline = ({ data, isChristmas }: TimelineProps) => {
 
   return (
     <div
-      className={`w-full transition-colors duration-1000 ${isChristmas ? 'bg-red-950/20' : 'bg-slate-950'} font-sans md:px-10 overflow-x-hidden`}
+      className={`w-full transition-colors duration-1000 ${isChristmas ? 'bg-transparent' : 'bg-transparent'} font-sans md:px-10 overflow-x-hidden`}
       ref={containerRef}
     >
       <div className="max-w-7xl mx-auto py-12 md:py-20 px-4 md:px-8 lg:px-10">

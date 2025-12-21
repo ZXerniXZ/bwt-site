@@ -21,7 +21,7 @@ export const History: React.FC<HistoryProps> = ({ isChristmas }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
         
         {/* Main History Card */}
-        <div className={`relative group p-6 md:p-10 rounded-2xl md:rounded-3xl border transition-all duration-300 shadow-2xl ${isChristmas ? 'bg-red-950/40 border-red-500/20 hover:border-green-500/30' : 'bg-slate-900/90 border-white/15 hover:border-emerald-500/30'}`}>
+        <div className={`relative group p-6 md:p-10 rounded-2xl md:rounded-3xl border transition-all duration-300 shadow-2xl ${isChristmas ? 'bg-red-950/20 border-red-500/20 hover:border-green-500/30' : 'bg-slate-900/40 border-white/15 hover:border-emerald-500/30'} backdrop-blur-md`}>
             <div className="space-y-6 md:space-y-8">
                 <div className="flex items-center justify-between">
                     <span className={`text-4xl md:text-5xl font-black font-mono tracking-tighter transition-colors ${isChristmas ? 'text-green-800' : 'text-slate-700'}`}>1994</span>
@@ -48,8 +48,8 @@ export const History: React.FC<HistoryProps> = ({ isChristmas }) => {
         <div className="space-y-6 md:space-y-8">
             
             {/* bzip2 Card */}
-            <div className={`flex gap-4 md:gap-6 group p-6 md:p-8 rounded-2xl md:rounded-3xl border transition-all shadow-xl ${isChristmas ? 'bg-green-950/20 border-green-500/20 hover:border-red-500/30' : 'bg-slate-900/90 border-white/15 hover:border-indigo-500/30'}`}>
-                <div className={`flex-shrink-0 p-3 md:p-4 rounded-xl md:rounded-2xl h-fit border transition-all ${isChristmas ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}`}>
+            <div className={`flex gap-4 md:gap-6 group p-6 md:p-8 rounded-2xl md:rounded-3xl border transition-all shadow-xl ${isChristmas ? 'bg-green-950/10 border-green-500/20 hover:border-red-500/30' : 'bg-slate-900/40 border-white/15 hover:border-indigo-500/30'} backdrop-blur-md`}>
+                <div className={`flex-shrink-0 p-3 md:p-4 rounded-xl md:rounded-2xl h-fit border transition-all ${isChristmas ? 'bg-red-500/10 text-red-400 border-red-400/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}`}>
                     {isChristmas ? <Gift className="w-6 h-6 md:w-8 md:h-8" /> : <FileArchive className="w-6 h-6 md:w-8 md:h-8" />}
                 </div>
                 <div>
@@ -61,7 +61,7 @@ export const History: React.FC<HistoryProps> = ({ isChristmas }) => {
             </div>
 
             {/* Genomics Card */}
-            <div className={`flex gap-4 md:gap-6 group p-6 md:p-8 rounded-2xl md:rounded-3xl border transition-all shadow-xl ${isChristmas ? 'bg-red-950/20 border-red-500/20 hover:border-green-500/30' : 'bg-slate-900/90 border-white/15 hover:border-cyan-500/30'}`}>
+            <div className={`flex gap-4 md:gap-6 group p-6 md:p-8 rounded-2xl md:rounded-3xl border transition-all shadow-xl ${isChristmas ? 'bg-red-950/10 border-red-500/20 hover:border-green-500/30' : 'bg-slate-900/40 border-white/15 hover:border-cyan-500/30'} backdrop-blur-md`}>
                 <div className={`flex-shrink-0 p-3 md:p-4 rounded-xl md:rounded-2xl h-fit border transition-all ${isChristmas ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'}`}>
                     <Dna className="w-6 h-6 md:w-8 md:h-8" />
                 </div>

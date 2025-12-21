@@ -12,36 +12,43 @@ const AnimatedShaderBackground = () => {
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     
-    // Use container dimensions instead of window
+    // Performance optimization: render at lower resolution on mobile
+    const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: false, 
+      alpha: true,
+      powerPreference: "high-performance" 
+    });
+    
+    renderer.setPixelRatio(pixelRatio);
     renderer.setSize(width, height);
-    // Ensure canvas fills container absolutely
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
+    renderer.domElement.style.pointerEvents = 'none';
     
     container.appendChild(renderer.domElement);
 
     const material = new THREE.ShaderMaterial({
       uniforms: {
         iTime: { value: 0 },
-        iResolution: { value: new THREE.Vector2(width, height) }
+        iResolution: { value: new THREE.Vector2(width * pixelRatio, height * pixelRatio) }
       },
       vertexShader: `
+        varying vec2 vUv;
         void main() {
+          vUv = uv;
           gl_Position = vec4(position, 1.0);
         }
       `,
       fragmentShader: `
         uniform float iTime;
         uniform vec2 iResolution;
-
-        #define NUM_OCTAVES 3
 
         float rand(vec2 n) {
           return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -51,58 +58,38 @@ const AnimatedShaderBackground = () => {
           vec2 ip = floor(p);
           vec2 u = fract(p);
           u = u*u*(3.0-2.0*u);
-
-          float res = mix(
+          return mix(
             mix(rand(ip), rand(ip + vec2(1.0, 0.0)), u.x),
             mix(rand(ip + vec2(0.0, 1.0)), rand(ip + vec2(1.0, 1.0)), u.x), u.y);
-          return res * res;
-        }
-
-        float fbm(vec2 x) {
-          float v = 0.0;
-          float a = 0.3;
-          vec2 shift = vec2(100);
-          mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
-          for (int i = 0; i < NUM_OCTAVES; ++i) {
-            v += a * noise(x);
-            x = rot * x * 2.0 + shift;
-            a *= 0.4;
-          }
-          return v;
         }
 
         void main() {
-          // Adjusted shader timing for smoother slow motion
-          vec2 shake = vec2(sin(iTime * 1.2) * 0.005, cos(iTime * 2.1) * 0.005);
-          // Replaced rotation matrix with scalar scaling to remove diagonal lines
-          vec2 p = ((gl_FragCoord.xy + shake * iResolution.xy) - iResolution.xy * 0.5) / iResolution.y * 8.0;
-          vec2 v;
+          vec2 uv = gl_FragCoord.xy / iResolution.xy;
+          vec2 p = (gl_FragCoord.xy - iResolution.xy * 0.5) / iResolution.y * 5.0;
+          
           vec4 o = vec4(0.0);
+          float t = iTime * 0.2;
 
-          float f = 2.0 + fbm(p + vec2(iTime * 5.0, 0.0)) * 0.5;
-
-          for (float i = 0.0; i < 35.0; i++) {
-            v = p + cos(i * i + (iTime + p.x * 0.08) * 0.025 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 3.0 + i) * 0.003, cos(iTime * 3.5 - i) * 0.003);
-            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 35.0));
+          // Layer 1: Aurore / Flussi energetici (Ottimizzato a 8 iterazioni)
+          for (float i = 0.0; i < 8.0; i++) {
+            vec2 v = p + cos(i + t + p.x * 0.2 + i * vec2(1.5, 1.2)) * 2.0;
             
-            // Adjusted colors to match the theme (Cyan/Indigo)
-            vec4 auroraColors = vec4(
-              0.1 + 0.3 * sin(i * 0.2 + iTime * 0.4), // Red/Dark channel
-              0.3 + 0.5 * cos(i * 0.3 + iTime * 0.5), // Green/Cyan channel
-              0.7 + 0.3 * sin(i * 0.4 + iTime * 0.3), // Blue/Indigo channel
+            vec4 auroraColor = vec4(
+              0.1 + 0.2 * sin(i * 0.5 + t),
+              0.2 + 0.4 * cos(i * 0.8 + t),
+              0.5 + 0.4 * sin(i * 0.3 + t),
               1.0
             );
             
-            vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.8)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
-            float thinnessFactor = smoothstep(0.0, 1.0, i / 35.0) * 0.6;
-            o += currentContribution * (1.0 + tailNoise * 0.8) * thinnessFactor;
+            float intensity = 0.01 / length(v * vec2(1.0, 2.0));
+            o += auroraColor * intensity * (i / 8.0);
           }
 
-          o = tanh(pow(o / 100.0, vec4(1.6)));
-          // Significantly increased brightness multiplier for better visibility
-          gl_FragColor = o * 2.5;
+          o = tanh(o * 2.0);
+          gl_FragColor = vec4(o.rgb, o.a * 0.4);
         }
-      `
+      `,
+      transparent: true
     });
 
     const geometry = new THREE.PlaneGeometry(2, 2);
@@ -111,18 +98,18 @@ const AnimatedShaderBackground = () => {
 
     let frameId: number;
     const animate = () => {
-      material.uniforms.iTime.value += 0.005; // Slower animation
+      material.uniforms.iTime.value += 0.01;
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
     };
-    animate();
+    frameId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       renderer.setSize(w, h);
-      material.uniforms.iResolution.value.set(w, h);
+      material.uniforms.iResolution.value.set(w * pixelRatio, h * pixelRatio);
     };
     window.addEventListener('resize', handleResize);
 
@@ -139,9 +126,8 @@ const AnimatedShaderBackground = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden z-0">
-      {/* Changed gradient to blend into slate-950 */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950 pointer-events-none" />
+    <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950 pointer-events-none" />
     </div>
   );
 };
