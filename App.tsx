@@ -118,7 +118,7 @@ export default function App() {
       </main>
 
       <Footer />
-
+//ciaooo
       <style>{`
         @keyframes global-snow {
             0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
